@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">TimePumpingDemo</string>
+    <string name="action_settings">Settings</string>
+
+    <item type="id" name="tag_first">1</item>
+    <item type="id" name="tag_second">2</item>
+    <item type="id" name="tag_third">3</item>
+    <item type="id" name="tag_forth">4</item>
+</resources>

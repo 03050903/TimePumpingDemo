@@ -1,0 +1,439 @@
+package com.jusfoun.timepumpingdemo;
+
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
+import android.content.Context;
+import android.graphics.Canvas;
+import android.os.Handler;
+import android.os.Message;
+import android.util.AttributeSet;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.view.VelocityTracker;
+import android.view.View;
+import android.view.ViewConfiguration;
+import android.view.animation.DecelerateInterpolator;
+import android.widget.RelativeLayout;
+
+import com.google.gson.Gson;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+/**
+ * @author zhaoyapeng
+ * @version create time:16/1/5上午10:52
+ * @Email zyp@jusfoun.com
+ * @Description ${TODO}
+ */
+public class TimePumpingView extends RelativeLayout {
+    private int trCount = 0;
+
+    private Context mContext;
+    private int screenWidth = 0;//屏幕宽度
+    private int screenHeight = 0;//屏幕高度
+
+
+    private int imgWidth = 200;
+    private int imgHeight = 200;
+    private int index = 0;
+
+
+    private List<HashMap<String, Object>> firstList;
+    private List<HashMap<String, Object>> secondeList;
+    private List<HashMap<String, Object>> thirdList;
+
+    int initY = 0;
+
+    private int timeCount = 0;
+    private boolean isMoveUp = true;//手指抬起时 移动的方向
+
+    private int offsetHeight = 0;
+
+
+    private boolean isCanMove = true;
+
+
+    private VelocityTracker mVelocityTracker;
+
+    public TimePumpingView(Context context) {
+        super(context);
+        mContext = context;
+        initData();
+        initViews();
+        initActions();
+    }
+
+    public TimePumpingView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        mContext = context;
+        initData();
+        initViews();
+        initActions();
+    }
+
+    public TimePumpingView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        mContext = context;
+        initData();
+        initViews();
+        initActions();
+    }
+
+    private void initData() {
+        offsetHeight = Utils.dip2px(mContext, 80);
+        screenWidth = Utils.getDisplayWidth(mContext);
+        screenHeight = Utils.getDisplayHeight(mContext);
+        imgWidth = Utils.dip2px(mContext, 10);
+        imgHeight = Utils.dip2px(mContext, 10);
+
+        initY = screenHeight / 5 * 3 - imgHeight;
+
+        firstList = new ArrayList<>();
+        secondeList = new ArrayList<>();
+        thirdList = new ArrayList<>();
+        mMaximumVelocity = ViewConfiguration.get(mContext).getScaledMaximumFlingVelocity();
+
+
+    }
+
+    private void initViews() {
+        setBackgroundResource(R.mipmap.bg);
+    }
+
+    private void initActions() {
+        addImageView();
+    }
+
+    public void addImageView() {
+
+        currentY = 0;
+//        addData();
+    }
+
+    float downY = 0;
+    float moveY;
+    private float downX = 0;
+    private float moveX = 0;
+    private float currentY = 0;
+
+    private boolean isDoublePoint = false;
+
+    private int currentMoveSpeed = 0;
+    private int mMaximumVelocity;
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+//        VelocityTracker velocityTracker = VelocityTracker.obtain();
+//        velocityTracker.addMovement(event);
+//        velocityTracker.computeCurrentVelocity(1000);
+
+//        currentMoveSpeed = (int)velocityTracker.getYVelocity()/1000;
+
+
+        if (mVelocityTracker == null) {
+            mVelocityTracker = VelocityTracker.obtain();
+        }
+        mVelocityTracker.addMovement(event);
+
+        Log.e("tag", "onTouchEvent1");
+        if (event.getPointerCount() >= 2) {
+            isDoublePoint = true;
+            return true;
+        }
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_CANCEL:
+                Log.e("tag", "callca");
+                break;
+            case MotionEvent.ACTION_DOWN:
+
+
+                isDoublePoint = false;
+                downY = event.getY();
+                downX = event.getX();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (isDoublePoint)
+                    break;
+                /*************超出后禁止滑动***************/
+                /**
+                 * 第一个点向上滑出屏幕或者最好一个点向下滑出屏幕禁止滑动
+                 */
+                if (event.getY() - downY < 0) {
+                    TimePumpingEntity timePumpingEntity = (TimePumpingEntity) firstList.get(0).get("value");
+                    float y = timePumpingEntity.getY();
+                    Log.e("y",""+y);
+                    if (y!=0&&y < screenHeight/2-timePumpingEntity.getHeight())
+                        return true;
+                } else {
+                    TimePumpingEntity timePumpingEntity = (TimePumpingEntity) firstList.get(firstList.size() - 1).get("value");
+                    float y = timePumpingEntity.getMaxY();
+
+                    if (y == 10) {
+                        return true;
+                    }
+                }
+                /*************超出后禁止滑动***************/
+
+                moveY = -downY + event.getY();
+                moveX = moveX - event.getX();
+
+                pointMove(moveY, true);
+
+                break;
+            case MotionEvent.ACTION_UP: {
+//                pointUp(currentY, moveY, true);
+//                mVelocityTracker.addMovement(event);
+                mVelocityTracker.computeCurrentVelocity(1000,mMaximumVelocity);
+                Log.e("tag", "velocityTracker=" + mVelocityTracker.getYVelocity());
+
+
+                // TODO 暂时屏蔽惯性
+//                if (Math.abs(moveY) > 50 && Math.abs(mVelocityTracker.getYVelocity()) > 500) {
+////                    handler.sendEmptyMessage(100);
+//                    if (moveY < 0) {
+//                        inertiaAnimation(true);
+//                    } else {
+//                        inertiaAnimation(false);
+//                    }
+//                } else {
+//                    pointUp(currentY, moveY, true);
+//                }
+
+                    pointUp(currentY, moveY, true);
+                break;
+
+            }
+        }
+        return true;
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        measureChildren(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED);
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        removeAllViews();
+    }
+
+    public interface OnTouchChangeListener {
+        void touchUp(float currentY, float moveY);
+
+        void touchMove(float moveY);
+
+        void addData(int count);
+
+    }
+
+    private OnTouchChangeListener listener;
+
+    public void setListener(OnTouchChangeListener listener) {
+        this.listener = listener;
+    }
+
+    public void pointUp(float currentY, float moveY, boolean isHasListener) {
+        if (Math.abs(moveY) > 10) {
+            for (int i = firstList.size() - 1; i >= 0; i--) {
+                HashMap<String, Object> map = firstList.get(i);
+                ((TimePumpingEntity) map.get("value")).setCurrentY(moveY);
+            }
+            if (listener != null && isHasListener)
+                listener.touchUp(currentY, moveY);
+            this.currentY = currentY + moveY;
+            this.downY = 0;
+            this.moveY = 0;
+
+        }
+    }
+
+    public void pointUp(float moveY, boolean isHasListener) {
+        pointUp(currentY, moveY, isHasListener);
+    }
+
+    private int count = 0;
+
+    public void pointMove(float moveY, boolean isHasListener) {
+        if (Math.abs(moveY) > 10) {
+            for (int i = 0; i < firstList.size(); i++) {
+                HashMap<String, Object> map = firstList.get(i);
+                if ("1".equals(map.get("type"))) {
+                    ((TimePumpingEntity) map.get("value")).setImageViewParams(moveY, 55);
+                } else if ("2".equals(map.get("type"))) {
+                    ((TimePumpingEntity) map.get("value")).setImageViewParams(moveY, 0);
+                } else if ("3".equals(map.get("type"))) {
+                    ((TimePumpingEntity) map.get("value")).setImageViewParams(moveY, -55);
+                } else {
+                    ((TimePumpingEntity) map.get("value")).setImageViewParams(moveY, -1);
+                }
+            }
+//            if (4000 * (count + 1) < Math.abs(currentY + moveY)) {
+//                addData();
+//                count++;
+//                if (listener != null)
+//                    listener.addData(18);
+//            }
+
+            if (listener != null && isHasListener) {
+                listener.touchMove(moveY);
+            }
+
+        }
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        return true;
+    }
+
+
+    public void addInitData() {
+        index = 0;
+
+        HashMap<String, Object> map1 = new HashMap<>();
+        TimePumpingEntity timePumpingEntit1 = new TimePumpingEntity(mContext, this);
+        timePumpingEntit1.init(initY - (int) (offsetHeight * 1));
+        timePumpingEntit1.setType(TimePumpingEntity.TYPE_IMAGE);
+        map1.put("type", "3");
+        map1.put("value", timePumpingEntit1);
+        firstList.add(map1);
+        index++;
+
+        HashMap<String, Object> map = new HashMap<>();
+        TimePumpingEntity timePumpingEntity = new TimePumpingEntity(mContext, this);
+        timePumpingEntity.init(initY - (int) (offsetHeight * 0));
+        timePumpingEntity.setType(TimePumpingEntity.TYPE_IMAGE);
+        map.put("type", "2");
+        map.put("value", timePumpingEntity);
+        firstList.add(map);
+        index++;
+
+    }
+
+    public void addData(TimeModel model) {
+        addInitData();
+//        index = 0;
+
+        List<TimeItemModel> datas = model.getData();
+        for (TimeItemModel data : datas) {
+
+            List<TimeItemValueModel> values = data.getValue();
+            for (TimeItemValueModel value : values) {
+                HashMap<String, Object> map = new HashMap<>();
+                TimePumpingEntity timePumpingEntity = new TimePumpingEntity(mContext, this);
+                timePumpingEntity.init(initY - (int) (offsetHeight * index));
+                timePumpingEntity.setType(TimePumpingEntity.TYPE_IMAGE);
+                map.put("type", value.getType());
+                map.put("value", timePumpingEntity);
+                firstList.add(map);
+                index++;
+            }
+            HashMap<String, Object> map1 = new HashMap<>();
+            TimePumpingEntity timePumpingEntity1 = new TimePumpingEntity(mContext, this);
+            timePumpingEntity1.init(initY - (int) (offsetHeight * index));
+            timePumpingEntity1.setType(TimePumpingEntity.TYPE_LINE);
+            timePumpingEntity1.setYear(data.getYear());
+//            timePumpingEntity1.setImageViewParams(0, -1);
+            map1.put("type", "-1");
+            map1.put("value", timePumpingEntity1);
+            firstList.add(map1);
+            index++;
+        }
+
+        for (int i = 0; i < firstList.size(); i++) {
+            HashMap<String, Object> map = firstList.get(i);
+            if ("1".equals(map.get("type"))) {
+                ((TimePumpingEntity) map.get("value")).setImageViewParams(moveY, 55);
+            } else if ("2".equals(map.get("type"))) {
+                ((TimePumpingEntity) map.get("value")).setImageViewParams(moveY, 0);
+            } else if ("3".equals(map.get("type"))) {
+                ((TimePumpingEntity) map.get("value")).setImageViewParams(moveY, -55);
+            } else {
+                ((TimePumpingEntity) map.get("value")).setImageViewParams(moveY, -1);
+            }
+        }
+
+    }
+
+
+    private int j = 1;
+    private int inertia = 15;
+    private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            Log.e("tag", "handleMessage1");
+            if (moveY > 0) {
+                Log.e("tag", "handleMessage2");
+                pointMove(moveY + inertia, true);
+                moveY = moveY + inertia;
+            } else {
+                Log.e("tag", "handleMessage3");
+                pointMove(moveY - inertia, true);
+                moveY = moveY - inertia;
+            }
+            timeCount += inertia;
+            if (timeCount >= 80) {
+                Log.e("tag", "handleMessage4");
+                j = 1;
+                timeCount = 0;
+                pointUp(currentY, moveY, true);
+            } else {
+                Log.e("tag", "handleMessage5");
+                if (moveY > 0) {
+                    pointMove(moveY + inertia, true);
+                    moveY = moveY + inertia;
+                } else {
+                    pointMove(moveY - inertia, true);
+                    moveY = moveY - inertia;
+                }
+
+                handler.sendEmptyMessageDelayed(100, 10 + j * 2);
+                j++;
+            }
+        }
+    };
+
+    public void setCanMove(boolean isCanMove) {
+        this.isCanMove = isCanMove;
+    }
+
+    protected void inertiaAnimation(final boolean isUp) {
+        ValueAnimator animator = ValueAnimator.ofFloat(0f, 30f);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+
+                if (!isUp) {
+                    pointMove(moveY + (float) animation.getAnimatedValue(), true);
+                    moveY = moveY + (float) animation.getAnimatedValue();
+                } else {
+                    pointMove(moveY - (float) animation.getAnimatedValue(), true);
+                    moveY = moveY - (float) animation.getAnimatedValue();
+                }
+            }
+
+        });
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                pointUp(currentY, moveY, true);
+            }
+        });
+        animator.setInterpolator(new DecelerateInterpolator());
+        animator.setDuration(400);
+        animator.start();
+    }
+
+}

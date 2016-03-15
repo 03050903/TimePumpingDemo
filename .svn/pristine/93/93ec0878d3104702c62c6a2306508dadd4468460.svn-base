@@ -1,0 +1,91 @@
+package com.jusfoun.timepumpingdemo;
+
+
+import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.Button;
+
+import com.google.gson.Gson;
+
+import java.util.HashMap;
+import java.util.List;
+
+public class MainActivity extends FragmentActivity {
+
+    private TimePumpingView time;
+    private CustomeScrollView scroll;
+
+
+    private int index = 0;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        String string = Utils.getString(getResources().openRawResource(R.raw.temp));
+        TimeModel model = new Gson().fromJson(string, TimeModel.class);
+
+        time = (TimePumpingView) findViewById(R.id.time);
+        scroll = (CustomeScrollView) findViewById(R.id.scroll);
+
+        time.addData(model);
+
+        for (TimeItemModel data : model.getData()) {
+            index++;
+            for (TimeItemValueModel value : data.getValue()) {
+                index++;
+            }
+        }
+
+        scroll.refresh(index+2);
+
+        time.setListener(new TimePumpingView.OnTouchChangeListener() {
+            @Override
+            public void touchUp(float currentY, float moveY) {
+                scroll.pointUp(-currentY, -moveY, false);
+            }
+
+            @Override
+            public void touchMove(float moveY) {
+                scroll.pointMove(-moveY, false);
+            }
+
+            @Override
+            public void addData(int count) {
+                scroll.refresh(index+2);
+            }
+
+        });
+
+        scroll.setListener(new CustomeScrollView.OnScrollTouchListener() {
+            @Override
+            public void touchUp(float currentY, float moveY) {
+                time.pointUp(-currentY, -moveY, false);
+            }
+
+            @Override
+            public void touchMove(float moveY) {
+                time.pointMove(-moveY, false);
+            }
+
+            @Override
+            public void setCanMove(boolean canMove) {
+//                time.setCanMove(canMove);
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+}

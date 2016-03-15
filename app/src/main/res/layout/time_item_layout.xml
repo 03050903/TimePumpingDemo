@@ -1,0 +1,90 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="2">
+
+        <ImageView
+            android:id="@+id/img_top"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:scaleType="fitXY"
+            android:src="@mipmap/img_time_up"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/text_title"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="10dp"
+                android:paddingTop="10dp"
+                android:scaleType="fitXY"
+                android:text="首次融资成功"
+                android:textColor="@android:color/holo_red_dark"
+                />
+
+            <TextView
+                android:id="@+id/text_time"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="10dp"
+                android:scaleType="fitXY"
+                android:text="2013年4月"
+                />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        >
+
+        <ImageView
+            android:id="@+id/img_bottom"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:scaleType="fitXY"
+            android:src="@mipmap/img_time_down"/>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/text_content"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_centerHorizontal="true"
+                android:ellipsize="end"
+                android:scaleType="fitXY"
+                android:text="拿到第一笔融资2亿人民币，迄今共融资7次，合计7亿人民币，就想电力技术的应用，不仅仅是发电，输电这么简单，而是引发了整个生产模式的变革一样，基于互联网技术而发展其阿里的大数据应用，将会对人们的生产过程和商品交换过程产生颠覆影响。"
+               android:layout_weight="1"
+                />
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:ellipsize="end"
+                android:scaleType="fitXY"
+                android:layout_weight="1"
+
+                />
+        </LinearLayout>
+
+
+
+    </RelativeLayout>
+
+
+</LinearLayout>

@@ -1,0 +1,89 @@
+package com.jusfoun.timepumpingdemo;
+
+import android.content.Context;
+import android.util.AttributeSet;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.widget.RelativeLayout;
+
+/**
+ * @author zhaoyapeng
+ * @version create time:16/1/28上午11:28
+ * @Email zyp@jusfoun.com
+ * @Description ${TODO}
+ */
+public class TImeItemView extends RelativeLayout {
+    private Context mContext;
+
+    public TImeItemView(Context context) {
+        super(context);
+        this.mContext = context;
+        initViews();
+    }
+
+    public TImeItemView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        this.mContext = context;
+        initViews();
+    }
+
+    public TImeItemView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        this.mContext = context;
+        initViews();
+    }
+
+    private void initViews() {
+        LayoutInflater.from(mContext).inflate(R.layout.time_item_layout, this, true);
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent ev) {
+        Log.e("tag","TImeItemView-onInterceptTouchEvent");
+        switch (ev.getAction()){
+            case MotionEvent.ACTION_DOWN:
+                donwY = ev.getY();
+                break;
+            case MotionEvent.ACTION_MOVE:
+            case MotionEvent.ACTION_UP:
+
+                if(Math.abs(donwY-ev.getY())>10){
+//                    requestDisallowInterceptTouchEvent(false);
+                    Log.e("tag", "TImeItemView-onTouchEvent1");
+                }else{
+//                    requestDisallowInterceptTouchEvent(true);
+                    Log.e("tag","TImeItemView-onTouchEvent2");
+                }
+
+        }
+        return true;
+    }
+
+    private float donwY;
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        switch (event.getAction()){
+            case MotionEvent.ACTION_DOWN:
+                donwY = event.getY();
+                break;
+            case MotionEvent.ACTION_MOVE:
+            case MotionEvent.ACTION_UP:
+
+                if(Math.abs(donwY-event.getY())>10){
+                    requestDisallowInterceptTouchEvent(false);
+                    Log.e("tag", "TImeItemView-onTouchEvent1");
+                }else{
+                    requestDisallowInterceptTouchEvent(true);
+                    Log.e("tag","TImeItemView-onTouchEvent2");
+                }
+
+        }
+
+
+        return false;
+
+    }
+}
